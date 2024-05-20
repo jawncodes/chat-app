@@ -38,3 +38,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 ---
 
 - [Use Prettier w/VSCode](https://github.com/prettier/prettier-vscode)
+
+- May require Firebase (Firebase CLI) to be installed globally (`npm install -g firebase-tools@latest`)
