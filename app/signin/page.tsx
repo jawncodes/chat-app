@@ -1,12 +1,11 @@
 "use client";
 
 import firebase from "firebase/compat/app";
-import { auth, authUI } from "@/app/config/firebase";
-import { FormEvent, useEffect, useState } from "react";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { FormEvent, useState, useEffect } from "react";
+import { auth, authUI } from "../config/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
-export default function SignUp() {
-  const [displayName, setDisplayName] = useState<string>("");
+export default function SignIn() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
@@ -20,17 +19,11 @@ export default function SignUp() {
     authUI.start("#firebaseui-auth-container", uiConfig);
   }, []);
 
-  const handleSignUp = async (e: FormEvent) => {
+  const handleSignIn = async (e: FormEvent) => {
     e.preventDefault();
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, { displayName });
-      }
-
-      setDisplayName("");
+      await signInWithEmailAndPassword(auth, email, password);
       setEmail("");
       setPassword("");
     } catch (ex) {
@@ -42,14 +35,7 @@ export default function SignUp() {
 
   return (
     <main>
-      <form onSubmit={handleSignUp} className={formClass}>
-        <input
-          className="border"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          type="text"
-          placeholder="Display Name"
-        />
+      <form onSubmit={handleSignIn} className={formClass}>
         <input
           className="border"
           value={email}
@@ -65,7 +51,7 @@ export default function SignUp() {
           placeholder="Password"
         />
         <button type="submit" className="bg-stone-400 hover:bg-stone-500">
-          Sign Up
+          Sign In
         </button>
       </form>
       <div id="firebaseui-auth-container"></div>;

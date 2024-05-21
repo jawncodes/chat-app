@@ -1,35 +1,47 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { addDoc, collection, onSnapshot } from "firebase/firestore";
-import { db } from "@/app/config/firebase";
+import { db, auth } from "@/app/config/firebase";
 
 export default function Home() {
-  const [texts, setTexts] = useState<any[]>([]);
+  const [message, setMessage] = useState<string>("");
+  const [messages, setMessages] = useState<any[]>([]);
+
+  const user = auth.currentUser;
+  const userData = user && {
+    uid: user.uid,
+    email: user.email,
+    displayName: user.displayName,
+  };
+
+  const messageCollectionRef = collection(db, "message");
 
   useEffect(() => {
-    const textCollectionRef = collection(db, "test");
-    const unsubscribe = onSnapshot(textCollectionRef, (snapshot) => {
-      const updatedTexts = snapshot.docs.map((doc) => doc.data().text);
-      setTexts(updatedTexts);
-      console.log(updatedTexts);
+    const unsubscribe = onSnapshot(messageCollectionRef, (snapshot) => {
+      const updatedMessages = snapshot.docs.map((doc) => doc.data());
+      updatedMessages.sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
+      setMessages(updatedMessages);
+      console.log(updatedMessages);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const [text, setText] = useState("");
+  const handleSend = async (e: FormEvent) => {
+    e.preventDefault();
 
-  const handleSend = async () => {
-    if (text.trim() === "") {
+    if (message.trim() === "") {
       return;
     }
 
-    await addDoc(collection(db, "test"), {
-      text,
+    await addDoc(messageCollectionRef, {
+      userData,
+      message,
+      createdAt: new Date(),
     });
 
-    setText("");
+    setMessage("");
   };
 
   return (
@@ -37,19 +49,25 @@ export default function Home() {
       <h1>Chat App</h1>
       <p>App for chatting with friends</p>
 
-      <div>
-        <input
-          type="text"
-          className="bg-gray-200"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-        <button onClick={handleSend}>Send</button>
-      </div>
+      {user && (
+        <form onSubmit={handleSend}>
+          <input
+            type="text"
+            className="bg-gray-200"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+          <button type="submit">Send</button>
+        </form>
+      )}
 
       <ul>
-        {texts.map((text, idx) => (
-          <li key={idx}>{text}</li>
+        {messages.map((message, idx) => (
+          <li key={idx} className="flex gap-2">
+            <h3>[{message.createdAt.toDate().toString()}]</h3>
+            <h1 className="font-bold">{message.userData.displayName}:</h1>
+            <h2>{message.message}</h2>
+          </li>
         ))}
       </ul>
     </main>
