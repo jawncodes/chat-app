@@ -2,21 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { addDoc, collection, onSnapshot } from "firebase/firestore";
-import { db, auth } from "@/app/config/firebase";
-import {
-  useCreateUserWithEmailAndPassword,
-  useSignInWithGoogle,
-} from "react-firebase-hooks/auth";
+import { db } from "@/app/config/firebase";
 
 export default function Home() {
   const [texts, setTexts] = useState<any[]>([]);
-
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-
-  const [createUserWithEmailAndPassword] =
-    useCreateUserWithEmailAndPassword(auth);
-  const [signInWithGoogle] = useSignInWithGoogle(auth);
 
   useEffect(() => {
     const textCollectionRef = collection(db, "test");
@@ -43,19 +32,6 @@ export default function Home() {
     setText("");
   };
 
-  const handleSignUp = async (e: any) => {
-    e.preventDefault();
-
-    try {
-      const res = await createUserWithEmailAndPassword(email, password);
-      console.log(res);
-      setEmail("");
-      setPassword("");
-    } catch (ex) {
-      console.error(ex);
-    }
-  };
-
   return (
     <main className="text-black">
       <h1>Chat App</h1>
@@ -76,24 +52,6 @@ export default function Home() {
           <li key={idx}>{text}</li>
         ))}
       </ul>
-
-      <form onSubmit={handleSignUp}>
-        <input
-          className="border"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-        />
-        <input
-          className="border"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          type="password"
-        />
-        <button type="submit">Sign Up</button>
-      </form>
-
-      <button onClick={() => signInWithGoogle()}>Sign in with Google</button>
     </main>
   );
 }
